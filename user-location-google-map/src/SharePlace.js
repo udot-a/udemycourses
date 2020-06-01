@@ -35,15 +35,33 @@ class PlaceFinder {
 
     selectPlace(coords, address) {
         if (this.map) {
-            this.map.rander(coords);
+            this.map.render(coords);
         } else {
             this.map = new Map(coords);
         }
-        this.shareBtn.disabled = false;
 
-        const shareLinkInput = document.getElementById("share-link");
+        fetch("http://localhost:3000/add-location", {
+            method: "POST",
+            body: JSON.stringify({
+                address,
+                lat: coords.lat,
+                lng: coords.lng
+            }),
+            headers: {
+                "Content-type": "application/json"
+            }
+        }).then(resp => resp.json())
+            .then(({id, message}) => {
+                console.log("Server message: ", message);
 
-        shareLinkInput.value = `${location.origin}/my-place?address=${encodeURI(address)}&lat=${coords.lat}&lng=${coords.lng}`;
+                this.shareBtn.disabled = false;
+
+                const shareLinkInput = document.getElementById("share-link");
+
+                shareLinkInput.value = `${location.origin}/my-place?location=${id}`;
+
+            });
+
     }
 
     async locateUserHandler() {
